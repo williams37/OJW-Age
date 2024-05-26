@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Since January 26, 2022</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #ffe6f2;
+            color: #ff1a75;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 0.5em;
+        }
+        p {
+            font-size: 2em;
+            margin: 0.2em 0;
+        }
+        .container {
+            background: #ffccff;
+            border: 2px solid #ff1a75;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            display: inline-block;
+        }
+        .highlight {
+            font-weight: bold;
+            font-size: 2.5em;
+            color: #ff66b2;
+        }
+        .image-container {
+            margin-bottom: 20px;
+        }
+        .image-container img {
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    <script>
+        function calculateTimeSince() {
+            const startDate = new Date('2022-01-26');
+            const now = new Date();
+
+            let years = now.getFullYear() - startDate.getFullYear();
+            let months = now.getMonth() - startDate.getMonth();
+            let days = now.getDate() - startDate.getDate();
+
+            if (days < 0) {
+                months -= 1;
+                days += new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+            }
+
+            if (months < 0) {
+                years -= 1;
+                months += 12;
+            }
+
+            document.getElementById('years').textContent = years;
+            document.getElementById('months').textContent = months;
+            document.getElementById('days').textContent = days;
+        }
+
+        function updateTime() {
+            calculateTimeSince();
+            // Update every 24 hours
+            setTimeout(updateTime, 24 * 60 * 60 * 1000);
+        }
+    </script>
+</head>
+<body onload="updateTime()">
+    <div class="container">
+        <div class="image-container">
+            <img src="daughter.jpg" alt="Picture of my daughter">
+        </div>
+        <h1>Time Since January 26, 2022</h1>
+        <p>Years: <span class="highlight" id="years"></span></p>
+        <p>Months: <span class="highlight" id="months"></span></p>
+        <p>Days: <span class="highlight" id="days"></span></p>
+    </div>
+</body>
+</html>
