@@ -3,92 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Since January 26, 2022</title>
+    <title>Photo Timeline</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
             background: #ffe6f2;
             color: #ff1a75;
             text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+            padding: 20px;
         }
         h1 {
-            font-size: 3em;
-            margin-bottom: 0.5em;
-        }
-        p {
             font-size: 2em;
-            margin: 0.2em 0;
+            margin-bottom: 1em;
         }
-        .container {
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .timeline-item {
             background: #ffccff;
             border: 2px solid #ff1a75;
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-            display: inline-block;
-        }
-        .highlight {
-            font-weight: bold;
-            font-size: 2.5em;
-            color: #ff66b2;
-        }
-        .image-container {
             margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .image-container img {
-            border-radius: 50%;
+        .timeline-item img {
+            border-radius: 15px;
             width: 150px;
             height: 150px;
             object-fit: cover;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+        .timeline-item span {
+            font-size: 1em;
+            color: #ff66b2;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
     <script>
-        function calculateTimeSince() {
+        document.addEventListener('DOMContentLoaded', function () {
             const startDate = new Date('2022-01-26');
-            const now = new Date();
+            const fileInput = document.getElementById('file-input');
+            const timeline = document.getElementById('timeline');
 
-            let years = now.getFullYear() - startDate.getFullYear();
-            let months = now.getMonth() - startDate.getMonth();
-            let days = now.getDate() - startDate.getDate();
+            fileInput.addEventListener('change', function () {
+                const files = fileInput.files;
+                timeline.innerHTML = '';
 
-            if (days < 0) {
-                months -= 1;
-                days += new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+                for (const file of files) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const img = new Image();
+                        img.src = e.target.result;
+
+                        img.onload = function () {
+                            EXIF.getData(img, function () {
+                                const dateTaken = EXIF.getTag(this, 'DateTimeOriginal');
+                                if (dateTaken) {
+                                    const photoDate = new Date(dateTaken.replace(/:/g, '-'));
+                                    const age = calculateAge(photoDate, startDate);
+                                    displayPhoto(img.src, age);
+                                } else {
+                                    displayPhoto(img.src, 'Unknown date');
+                                }
+                            });
+                        };
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            function calculateAge(photoDate, startDate) {
+                let years = photoDate.getFullYear() - startDate.getFullYear();
+                let months = photoDate.getMonth() - startDate.getMonth();
+                let days = photoDate.getDate() - startDate.getDate();
+
+                if (days < 0) {
+                    months -= 1;
+                    days += new Date(photoDate.getFullYear(), photoDate.getMonth(), 0).getDate();
+                }
+
+                if (months < 0) {
+                    years -= 1;
+                    months += 12;
+                }
+
+                return `${years} years, ${months} months, and ${days} days old`;
             }
 
-            if (months < 0) {
-                years -= 1;
-                months += 12;
+            function displayPhoto(src, age) {
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+                item.innerHTML = `
+                    <img src="${src}" alt="Photo">
+                    <span>${age}</span>
+                `;
+                timeline.appendChild(item);
             }
-
-            document.getElementById('years').textContent = years;
-            document.getElementById('months').textContent = months;
-            document.getElementById('days').textContent = days;
-        }
-
-        function updateTime() {
-            calculateTimeSince();
-            // Update every 24 hours
-            setTimeout(updateTime, 24 * 60 * 60 * 1000);
-        }
+        });
     </script>
 </head>
-<body onload="updateTime()">
-    <div class="container">
-        <div class="image-container">
-            <img src="IMG_6852.jpeg" alt="Picture of my daughter">
-        </div>
-        <h1>Time Since January 26, 2022</h1>
-        <p>Years: <span class="highlight" id="years"></span></p>
-        <p>Months: <span class="highlight" id="months"></span></p>
-        <p>Days: <span class="highlight" id="days"></span></p>
-    </div>
+<body>
+    <h1>Photo Timeline</h1>
+    <input type="file" id="file-input" multiple accept="image/*">
+    <div id="timeline" class="timeline"></div>
 </body>
 </html>
